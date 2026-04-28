@@ -174,13 +174,25 @@ function Index() {
 
   const [targetCoastAge, setTargetCoastAge] = useState<number>(36);
 
+  const errors = useMemo(() => validate(inputs, targetCoastAge), [inputs, targetCoastAge]);
+  const inputsValid =
+    !errors.currentAge &&
+    !errors.retirementAge &&
+    !errors.currentSavings &&
+    !errors.annualExpenses &&
+    !errors.expectedReturn &&
+    !errors.withdrawalRate;
+
   const results = useMemo(() => calculateCoast(inputs), [inputs]);
   const monthlyNeeded = useMemo(
-    () => monthlySavingsToCoast(inputs, targetCoastAge),
-    [inputs, targetCoastAge],
+    () =>
+      inputsValid && !errors.targetCoastAge
+        ? monthlySavingsToCoast(inputs, targetCoastAge)
+        : null,
+    [inputs, targetCoastAge, inputsValid, errors.targetCoastAge],
   );
 
-  const coastReached = inputs.currentSavings >= results.coastNumber;
+  const coastReached = inputsValid && inputs.currentSavings >= results.coastNumber;
   const set = <K extends keyof CoastInputs>(k: K, v: CoastInputs[K]) =>
     setInputs((p) => ({ ...p, [k]: v }));
 
