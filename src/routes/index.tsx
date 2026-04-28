@@ -17,6 +17,12 @@ import {
   monthlySavingsToCoast,
   type CoastInputs,
 } from "@/lib/coast-fire";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -166,13 +172,54 @@ interface YieldPreset {
   label: string;
   expectedReturn: number;
   withdrawalRate: number;
+  riskTitle: string;
+  returnNote: string;
+  withdrawalNote: string;
+  sustainability: string;
 }
 
 const YIELD_PRESETS: YieldPreset[] = [
-  { id: "conservative", label: "Conservative", expectedReturn: 5, withdrawalRate: 3 },
-  { id: "moderate", label: "Moderate", expectedReturn: 7, withdrawalRate: 4 },
-  { id: "aggressive", label: "Aggressive", expectedReturn: 9, withdrawalRate: 5 },
+  {
+    id: "conservative",
+    label: "Conservative",
+    expectedReturn: 5,
+    withdrawalRate: 3,
+    riskTitle: "Lower volatility, slower growth",
+    returnNote:
+      "5% return assumes a bond-heavy portfolio (e.g. 40/60 stocks/bonds). Expect smaller drawdowns but a longer path to coast.",
+    withdrawalNote:
+      "3% withdrawal is well below the 4% rule — designed to survive 50+ year retirements and severe sequence-of-returns risk.",
+    sustainability:
+      "Highest probability of never running out of money, even in historically bad market periods.",
+  },
+  {
+    id: "moderate",
+    label: "Moderate",
+    expectedReturn: 7,
+    withdrawalRate: 4,
+    riskTitle: "Balanced — the standard baseline",
+    returnNote:
+      "7% return reflects a roughly 80/20 stock/bond portfolio at long-run real averages (post-inflation, pre-tax).",
+    withdrawalNote:
+      "4% is the classic Trinity-study rate, designed to survive 30 years of retirement with high historical success.",
+    sustainability:
+      "Strong success rate over 30-year horizons; some risk in extended retirements or poor early-year returns.",
+  },
+  {
+    id: "aggressive",
+    label: "Aggressive",
+    expectedReturn: 9,
+    withdrawalRate: 5,
+    riskTitle: "Higher upside, larger drawdowns",
+    returnNote:
+      "9% return assumes a 100% equities portfolio at optimistic long-run averages. Expect 30–50% drawdowns along the way.",
+    withdrawalNote:
+      "5% withdrawal is above safe-rate guidance — viable only with strong returns, flexibility to cut spending, or other income.",
+    sustainability:
+      "Faster path to coast, but materially higher chance of portfolio depletion in adverse scenarios.",
+  },
 ];
+
 
 
 function Index() {
@@ -298,35 +345,82 @@ function Index() {
                   <label className="block text-[10px] uppercase tracking-[0.2em] text-zinc-400">
                     Yield Assumptions
                   </label>
-                  <div className="flex items-center gap-1">
-                    {YIELD_PRESETS.map((p) => {
-                      const active =
-                        inputs.expectedReturn === p.expectedReturn &&
-                        inputs.withdrawalRate === p.withdrawalRate;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() =>
-                            setInputs((prev) => ({
-                              ...prev,
-                              expectedReturn: p.expectedReturn,
-                              withdrawalRate: p.withdrawalRate,
-                            }))
-                          }
-                          aria-pressed={active}
-                          title={`${p.expectedReturn}% return / ${p.withdrawalRate}% SWR`}
-                          className={`px-3 py-1 text-[10px] uppercase tracking-widest border transition-colors ${
-                            active
-                              ? "bg-ink text-white border-ink"
-                              : "bg-transparent text-zinc-500 border-blueprint hover:text-ink hover:border-ink"
-                          }`}
-                        >
-                          {p.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <TooltipProvider delayDuration={150}>
+                    <div className="flex items-center gap-1">
+                      {YIELD_PRESETS.map((p) => {
+                        const active =
+                          inputs.expectedReturn === p.expectedReturn &&
+                          inputs.withdrawalRate === p.withdrawalRate;
+                        return (
+                          <UITooltip key={p.id}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setInputs((prev) => ({
+                                    ...prev,
+                                    expectedReturn: p.expectedReturn,
+                                    withdrawalRate: p.withdrawalRate,
+                                  }))
+                                }
+                                aria-pressed={active}
+                                className={`px-3 py-1 text-[10px] uppercase tracking-widest border transition-colors cursor-help ${
+                                  active
+                                    ? "bg-ink text-white border-ink"
+                                    : "bg-transparent text-zinc-500 border-blueprint hover:text-ink hover:border-ink"
+                                }`}
+                              >
+                                {p.label}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              align="end"
+                              sideOffset={8}
+                              className="max-w-xs bg-ink text-white border-ink p-0 rounded-sm"
+                            >
+                              <div className="p-4 space-y-3">
+                                <div>
+                                  <div className="text-[10px] uppercase tracking-widest text-horizon mb-1">
+                                    {p.label} · {p.expectedReturn}% / {p.withdrawalRate}%
+                                  </div>
+                                  <div className="text-xs text-zinc-300 leading-snug">
+                                    {p.riskTitle}
+                                  </div>
+                                </div>
+                                <div className="border-t border-zinc-700 pt-3 space-y-2">
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Expected return
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.returnNote}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Withdrawal rate
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.withdrawalNote}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Sustainability
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.sustainability}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </UITooltip>
+                        );
+                      })}
+                    </div>
+                  </TooltipProvider>
                 </div>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                   <NumberField
