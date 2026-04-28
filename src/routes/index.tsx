@@ -281,9 +281,40 @@ function Index() {
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-zinc-400 mb-6">
-                  Yield Assumptions
-                </label>
+                <div className="flex items-baseline justify-between mb-6 gap-4 flex-wrap">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-zinc-400">
+                    Yield Assumptions
+                  </label>
+                  <div className="flex items-center gap-1">
+                    {YIELD_PRESETS.map((p) => {
+                      const active =
+                        inputs.expectedReturn === p.expectedReturn &&
+                        inputs.withdrawalRate === p.withdrawalRate;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() =>
+                            setInputs((prev) => ({
+                              ...prev,
+                              expectedReturn: p.expectedReturn,
+                              withdrawalRate: p.withdrawalRate,
+                            }))
+                          }
+                          aria-pressed={active}
+                          title={`${p.expectedReturn}% return / ${p.withdrawalRate}% SWR`}
+                          className={`px-3 py-1 text-[10px] uppercase tracking-widest border transition-colors ${
+                            active
+                              ? "bg-ink text-white border-ink"
+                              : "bg-transparent text-zinc-500 border-blueprint hover:text-ink hover:border-ink"
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                   <NumberField
                     label="Market Return"
