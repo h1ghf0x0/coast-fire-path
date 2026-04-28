@@ -345,35 +345,82 @@ function Index() {
                   <label className="block text-[10px] uppercase tracking-[0.2em] text-zinc-400">
                     Yield Assumptions
                   </label>
-                  <div className="flex items-center gap-1">
-                    {YIELD_PRESETS.map((p) => {
-                      const active =
-                        inputs.expectedReturn === p.expectedReturn &&
-                        inputs.withdrawalRate === p.withdrawalRate;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() =>
-                            setInputs((prev) => ({
-                              ...prev,
-                              expectedReturn: p.expectedReturn,
-                              withdrawalRate: p.withdrawalRate,
-                            }))
-                          }
-                          aria-pressed={active}
-                          title={`${p.expectedReturn}% return / ${p.withdrawalRate}% SWR`}
-                          className={`px-3 py-1 text-[10px] uppercase tracking-widest border transition-colors ${
-                            active
-                              ? "bg-ink text-white border-ink"
-                              : "bg-transparent text-zinc-500 border-blueprint hover:text-ink hover:border-ink"
-                          }`}
-                        >
-                          {p.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <TooltipProvider delayDuration={150}>
+                    <div className="flex items-center gap-1">
+                      {YIELD_PRESETS.map((p) => {
+                        const active =
+                          inputs.expectedReturn === p.expectedReturn &&
+                          inputs.withdrawalRate === p.withdrawalRate;
+                        return (
+                          <UITooltip key={p.id}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setInputs((prev) => ({
+                                    ...prev,
+                                    expectedReturn: p.expectedReturn,
+                                    withdrawalRate: p.withdrawalRate,
+                                  }))
+                                }
+                                aria-pressed={active}
+                                className={`px-3 py-1 text-[10px] uppercase tracking-widest border transition-colors cursor-help ${
+                                  active
+                                    ? "bg-ink text-white border-ink"
+                                    : "bg-transparent text-zinc-500 border-blueprint hover:text-ink hover:border-ink"
+                                }`}
+                              >
+                                {p.label}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              align="end"
+                              sideOffset={8}
+                              className="max-w-xs bg-ink text-white border-ink p-0 rounded-sm"
+                            >
+                              <div className="p-4 space-y-3">
+                                <div>
+                                  <div className="text-[10px] uppercase tracking-widest text-horizon mb-1">
+                                    {p.label} · {p.expectedReturn}% / {p.withdrawalRate}%
+                                  </div>
+                                  <div className="text-xs text-zinc-300 leading-snug">
+                                    {p.riskTitle}
+                                  </div>
+                                </div>
+                                <div className="border-t border-zinc-700 pt-3 space-y-2">
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Expected return
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.returnNote}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Withdrawal rate
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.withdrawalNote}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
+                                      Sustainability
+                                    </div>
+                                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                      {p.sustainability}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </UITooltip>
+                        );
+                      })}
+                    </div>
+                  </TooltipProvider>
                 </div>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                   <NumberField
