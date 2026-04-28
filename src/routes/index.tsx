@@ -45,18 +45,41 @@ interface NumberFieldProps {
   prefix?: string;
   suffix?: string;
   step?: number;
+  error?: string | null;
+  min?: number;
+  max?: number;
 }
 
-function NumberField({ label, value, onChange, prefix, suffix, step = 1 }: NumberFieldProps) {
+function NumberField({
+  label,
+  value,
+  onChange,
+  prefix,
+  suffix,
+  step = 1,
+  error,
+  min,
+  max,
+}: NumberFieldProps) {
+  const invalid = !!error;
   return (
     <div>
       <span className="text-xs text-zinc-500 block">{label}</span>
-      <div className="flex items-center border-b border-zinc-200 focus-within:border-horizon transition-colors">
+      <div
+        className={`flex items-center border-b transition-colors ${
+          invalid
+            ? "border-horizon"
+            : "border-zinc-200 focus-within:border-horizon"
+        }`}
+      >
         {prefix && <span className="text-zinc-400 pr-1">{prefix}</span>}
         <input
           type="number"
           inputMode="decimal"
           step={step}
+          min={min}
+          max={max}
+          aria-invalid={invalid}
           value={Number.isFinite(value) ? value : ""}
           onChange={(e) => {
             const v = e.target.valueAsNumber;
@@ -66,9 +89,78 @@ function NumberField({ label, value, onChange, prefix, suffix, step = 1 }: Numbe
         />
         {suffix && <span className="text-zinc-400 pl-1">{suffix}</span>}
       </div>
+      {error && (
+        <p
+          role="alert"
+          className="text-[10px] uppercase tracking-widest text-horizon mt-2 leading-relaxed"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
+
+interface ValidationErrors {
+  currentAge?: string;
+  retirementAge?: string;
+  currentSavings?: string;
+  annualExpenses?: string;
+  expectedReturn?: string;
+  withdrawalRate?: string;
+  targetCoastAge?: string;
+}
+
+function validate(inputs: CoastInputs, targetCoastAge: number): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  if (!Number.isFinite(inputs.currentAge) || inputs.currentAge <= 0) {
+    errors.currentAge = "Enter an age greater than 0";
+  } else if (inputs.currentAge > 120) {
+    errors.currentAge = "Age must be 120 or below";
+  }
+
+  if (!Number.isFinite(inputs.retirementAge) || inputs.retirementAge <= 0) {
+    errors.retirementAge = "Enter a retirement age";
+  } else if (inputs.retirementAge <= inputs.currentAge) {
+    errors.retirementAge = "Must be after your current age";
+  } else if (inputs.retirementAge > 120) {
+    errors.retirementAge = "Retirement age must be 120 or below";
+  }
+
+  if (inputs.currentSavings < 0) {
+    errors.currentSavings = "Savings cannot be negative";
+  }
+
+  if (!Number.isFinite(inputs.annualExpenses) || inputs.annualExpenses <= 0) {
+    errors.annualExpenses = "Enter your annual expenses";
+  }
+
+  if (!Number.isFinite(inputs.expectedReturn)) {
+    errors.expectedReturn = "Enter an expected return";
+  } else if (inputs.expectedReturn <= 0) {
+    errors.expectedReturn = "Return must be greater than 0%";
+  } else if (inputs.expectedReturn > 30) {
+    errors.expectedReturn = "Return above 30% is unrealistic";
+  }
+
+  if (!Number.isFinite(inputs.withdrawalRate) || inputs.withdrawalRate <= 0) {
+    errors.withdrawalRate = "Withdrawal rate must be greater than 0%";
+  } else if (inputs.withdrawalRate > 20) {
+    errors.withdrawalRate = "Rate above 20% is unsustainable";
+  }
+
+  if (
+    Number.isFinite(targetCoastAge) &&
+    Number.isFinite(inputs.currentAge) &&
+    targetCoastAge <= inputs.currentAge
+  ) {
+    errors.targetCoastAge = "Target must be after current age";
+  }
+
+  return errors;
+}
+
 
 function Index() {
   const [inputs, setInputs] = useState<CoastInputs>({
@@ -82,13 +174,25 @@ function Index() {
 
   const [targetCoastAge, setTargetCoastAge] = useState<number>(36);
 
+  const errors = useMemo(() => validate(inputs, targetCoastAge), [inputs, targetCoastAge]);
+  const inputsValid =
+    !errors.currentAge &&
+    !errors.retirementAge &&
+    !errors.currentSavings &&
+    !errors.annualExpenses &&
+    !errors.expectedReturn &&
+    !errors.withdrawalRate;
+
   const results = useMemo(() => calculateCoast(inputs), [inputs]);
   const monthlyNeeded = useMemo(
-    () => monthlySavingsToCoast(inputs, targetCoastAge),
-    [inputs, targetCoastAge],
+    () =>
+      inputsValid && !errors.targetCoastAge
+        ? monthlySavingsToCoast(inputs, targetCoastAge)
+        : null,
+    [inputs, targetCoastAge, inputsValid, errors.targetCoastAge],
   );
 
-  const coastReached = inputs.currentSavings >= results.coastNumber;
+  const coastReached = inputsValid && inputs.currentSavings >= results.coastNumber;
   const set = <K extends keyof CoastInputs>(k: K, v: CoastInputs[K]) =>
     setInputs((p) => ({ ...p, [k]: v }));
 
@@ -141,27 +245,37 @@ function Index() {
                 <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                   <NumberField
                     label="Current Age"
+                    min={0}
+                    max={120}
                     value={inputs.currentAge}
                     onChange={(v) => set("currentAge", v)}
+                    error={errors.currentAge}
                   />
                   <NumberField
                     label="Target Age"
+                    min={0}
+                    max={120}
                     value={inputs.retirementAge}
                     onChange={(v) => set("retirementAge", v)}
+                    error={errors.retirementAge}
                   />
                   <NumberField
                     label="Current Assets"
                     prefix="$"
                     step={1000}
+                    min={0}
                     value={inputs.currentSavings}
                     onChange={(v) => set("currentSavings", v)}
+                    error={errors.currentSavings}
                   />
                   <NumberField
                     label="Annual Expenses"
                     prefix="$"
                     step={500}
+                    min={0}
                     value={inputs.annualExpenses}
                     onChange={(v) => set("annualExpenses", v)}
+                    error={errors.annualExpenses}
                   />
                 </div>
               </div>
@@ -177,6 +291,7 @@ function Index() {
                     step={0.1}
                     value={inputs.expectedReturn}
                     onChange={(v) => set("expectedReturn", v)}
+                    error={errors.expectedReturn}
                   />
                   <NumberField
                     label="Safe Withdrawal"
@@ -184,6 +299,7 @@ function Index() {
                     step={0.1}
                     value={inputs.withdrawalRate}
                     onChange={(v) => set("withdrawalRate", v)}
+                    error={errors.withdrawalRate}
                   />
                 </div>
               </div>
@@ -203,32 +319,49 @@ function Index() {
                 <h3 className="text-xs uppercase tracking-widest text-zinc-400 mb-3">
                   Monthly savings to coast by age
                 </h3>
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-4 mb-2">
                   <input
                     type="number"
+                    min={0}
+                    max={120}
+                    aria-invalid={!!errors.targetCoastAge}
                     value={targetCoastAge}
                     onChange={(e) =>
                       setTargetCoastAge(e.target.valueAsNumber || 0)
                     }
-                    className="w-20 bg-transparent border-b border-zinc-700 focus:border-horizon outline-none text-2xl py-1 tabular-nums"
+                    className={`w-20 bg-transparent border-b outline-none text-2xl py-1 tabular-nums ${
+                      errors.targetCoastAge
+                        ? "border-horizon"
+                        : "border-zinc-700 focus:border-horizon"
+                    }`}
                   />
                   <span className="text-zinc-500 text-xs uppercase tracking-widest">
                     target age
                   </span>
                 </div>
-                <div className="font-display text-5xl mb-3">
-                  {monthlyNeeded === null
+                {errors.targetCoastAge && (
+                  <p
+                    role="alert"
+                    className="text-[10px] uppercase tracking-widest text-horizon mb-3"
+                  >
+                    {errors.targetCoastAge}
+                  </p>
+                )}
+                <div className="font-display text-5xl mb-3 mt-2">
+                  {!inputsValid || monthlyNeeded === null
                     ? "—"
                     : monthlyNeeded === 0
                       ? "$0"
                       : formatCurrency(monthlyNeeded)}
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed">
-                  {monthlyNeeded === null
-                    ? "Choose a target age beyond your current age."
-                    : monthlyNeeded === 0
-                      ? "You are already on track — no additional contributions required."
-                      : `Per month, every month, until age ${targetCoastAge}.`}
+                  {!inputsValid
+                    ? "Resolve the warnings above to see your plan."
+                    : monthlyNeeded === null
+                      ? "Choose a target age beyond your current age."
+                      : monthlyNeeded === 0
+                        ? "You are already on track — no additional contributions required."
+                        : `Per month, every month, until age ${targetCoastAge}.`}
                 </p>
               </div>
             </div>
