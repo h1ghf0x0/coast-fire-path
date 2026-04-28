@@ -161,6 +161,19 @@ function validate(inputs: CoastInputs, targetCoastAge: number): ValidationErrors
   return errors;
 }
 
+interface YieldPreset {
+  id: string;
+  label: string;
+  expectedReturn: number;
+  withdrawalRate: number;
+}
+
+const YIELD_PRESETS: YieldPreset[] = [
+  { id: "conservative", label: "Conservative", expectedReturn: 5, withdrawalRate: 3 },
+  { id: "moderate", label: "Moderate", expectedReturn: 7, withdrawalRate: 4 },
+  { id: "aggressive", label: "Aggressive", expectedReturn: 9, withdrawalRate: 5 },
+];
+
 
 function Index() {
   const [inputs, setInputs] = useState<CoastInputs>({
