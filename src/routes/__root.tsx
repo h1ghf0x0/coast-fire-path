@@ -33,10 +33,14 @@ export const Route = createRootRoute({
       { name: "description", content: "Calculate your Coast FIRE number and visualize your trajectory to financial independence." },
       { name: "author", content: "Horizon Line" },
       { property: "og:title", content: "Coast FIRE Calculator — Horizon Line" },
-      { property: "og:description", content: "Find the structural point where today's portfolio sustains your retirement — without saving another dollar." },
+      { property: "og:description", content: "Calculate your Coast FIRE number and visualize your trajectory to financial independence." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Coast FIRE Calculator — Horizon Line" },
+      { name: "twitter:description", content: "Calculate your Coast FIRE number and visualize your trajectory to financial independence." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6129c18-de5f-4c8c-884e-d8ad1e029f66" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6129c18-de5f-4c8c-884e-d8ad1e029f66" },
     ],
     links: [
       {
