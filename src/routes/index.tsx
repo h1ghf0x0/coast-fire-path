@@ -166,13 +166,54 @@ interface YieldPreset {
   label: string;
   expectedReturn: number;
   withdrawalRate: number;
+  riskTitle: string;
+  returnNote: string;
+  withdrawalNote: string;
+  sustainability: string;
 }
 
 const YIELD_PRESETS: YieldPreset[] = [
-  { id: "conservative", label: "Conservative", expectedReturn: 5, withdrawalRate: 3 },
-  { id: "moderate", label: "Moderate", expectedReturn: 7, withdrawalRate: 4 },
-  { id: "aggressive", label: "Aggressive", expectedReturn: 9, withdrawalRate: 5 },
+  {
+    id: "conservative",
+    label: "Conservative",
+    expectedReturn: 5,
+    withdrawalRate: 3,
+    riskTitle: "Lower volatility, slower growth",
+    returnNote:
+      "5% return assumes a bond-heavy portfolio (e.g. 40/60 stocks/bonds). Expect smaller drawdowns but a longer path to coast.",
+    withdrawalNote:
+      "3% withdrawal is well below the 4% rule — designed to survive 50+ year retirements and severe sequence-of-returns risk.",
+    sustainability:
+      "Highest probability of never running out of money, even in historically bad market periods.",
+  },
+  {
+    id: "moderate",
+    label: "Moderate",
+    expectedReturn: 7,
+    withdrawalRate: 4,
+    riskTitle: "Balanced — the standard baseline",
+    returnNote:
+      "7% return reflects a roughly 80/20 stock/bond portfolio at long-run real averages (post-inflation, pre-tax).",
+    withdrawalNote:
+      "4% is the classic Trinity-study rate, designed to survive 30 years of retirement with high historical success.",
+    sustainability:
+      "Strong success rate over 30-year horizons; some risk in extended retirements or poor early-year returns.",
+  },
+  {
+    id: "aggressive",
+    label: "Aggressive",
+    expectedReturn: 9,
+    withdrawalRate: 5,
+    riskTitle: "Higher upside, larger drawdowns",
+    returnNote:
+      "9% return assumes a 100% equities portfolio at optimistic long-run averages. Expect 30–50% drawdowns along the way.",
+    withdrawalNote:
+      "5% withdrawal is above safe-rate guidance — viable only with strong returns, flexibility to cut spending, or other income.",
+    sustainability:
+      "Faster path to coast, but materially higher chance of portfolio depletion in adverse scenarios.",
+  },
 ];
+
 
 
 function Index() {
