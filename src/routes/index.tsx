@@ -17,6 +17,12 @@ import {
   monthlySavingsToCoast,
   type CoastInputs,
 } from "@/lib/coast-fire";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/")({
   component: Index,
