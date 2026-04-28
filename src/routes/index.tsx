@@ -310,10 +310,10 @@ function Index() {
                         color: "white",
                       }}
                       labelStyle={{ color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.1em", fontSize: 10 }}
-                      formatter={(value: number, name: string) => [
-                        formatCurrency(value),
+                      formatter={((value: unknown, name: unknown) => [
+                        formatCurrency(Number(value)),
                         name === "coasting" ? "Portfolio" : "Coast Threshold",
-                      ]}
+                      ]) as never}
                       labelFormatter={(age) => `Age ${age}`}
                     />
                     <Area
