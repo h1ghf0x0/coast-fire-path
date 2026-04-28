@@ -45,18 +45,41 @@ interface NumberFieldProps {
   prefix?: string;
   suffix?: string;
   step?: number;
+  error?: string | null;
+  min?: number;
+  max?: number;
 }
 
-function NumberField({ label, value, onChange, prefix, suffix, step = 1 }: NumberFieldProps) {
+function NumberField({
+  label,
+  value,
+  onChange,
+  prefix,
+  suffix,
+  step = 1,
+  error,
+  min,
+  max,
+}: NumberFieldProps) {
+  const invalid = !!error;
   return (
     <div>
       <span className="text-xs text-zinc-500 block">{label}</span>
-      <div className="flex items-center border-b border-zinc-200 focus-within:border-horizon transition-colors">
+      <div
+        className={`flex items-center border-b transition-colors ${
+          invalid
+            ? "border-horizon"
+            : "border-zinc-200 focus-within:border-horizon"
+        }`}
+      >
         {prefix && <span className="text-zinc-400 pr-1">{prefix}</span>}
         <input
           type="number"
           inputMode="decimal"
           step={step}
+          min={min}
+          max={max}
+          aria-invalid={invalid}
           value={Number.isFinite(value) ? value : ""}
           onChange={(e) => {
             const v = e.target.valueAsNumber;
@@ -66,9 +89,78 @@ function NumberField({ label, value, onChange, prefix, suffix, step = 1 }: Numbe
         />
         {suffix && <span className="text-zinc-400 pl-1">{suffix}</span>}
       </div>
+      {error && (
+        <p
+          role="alert"
+          className="text-[10px] uppercase tracking-widest text-horizon mt-2 leading-relaxed"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
+
+interface ValidationErrors {
+  currentAge?: string;
+  retirementAge?: string;
+  currentSavings?: string;
+  annualExpenses?: string;
+  expectedReturn?: string;
+  withdrawalRate?: string;
+  targetCoastAge?: string;
+}
+
+function validate(inputs: CoastInputs, targetCoastAge: number): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  if (!Number.isFinite(inputs.currentAge) || inputs.currentAge <= 0) {
+    errors.currentAge = "Enter an age greater than 0";
+  } else if (inputs.currentAge > 120) {
+    errors.currentAge = "Age must be 120 or below";
+  }
+
+  if (!Number.isFinite(inputs.retirementAge) || inputs.retirementAge <= 0) {
+    errors.retirementAge = "Enter a retirement age";
+  } else if (inputs.retirementAge <= inputs.currentAge) {
+    errors.retirementAge = "Must be after your current age";
+  } else if (inputs.retirementAge > 120) {
+    errors.retirementAge = "Retirement age must be 120 or below";
+  }
+
+  if (inputs.currentSavings < 0) {
+    errors.currentSavings = "Savings cannot be negative";
+  }
+
+  if (!Number.isFinite(inputs.annualExpenses) || inputs.annualExpenses <= 0) {
+    errors.annualExpenses = "Enter your annual expenses";
+  }
+
+  if (!Number.isFinite(inputs.expectedReturn)) {
+    errors.expectedReturn = "Enter an expected return";
+  } else if (inputs.expectedReturn <= 0) {
+    errors.expectedReturn = "Return must be greater than 0%";
+  } else if (inputs.expectedReturn > 30) {
+    errors.expectedReturn = "Return above 30% is unrealistic";
+  }
+
+  if (!Number.isFinite(inputs.withdrawalRate) || inputs.withdrawalRate <= 0) {
+    errors.withdrawalRate = "Withdrawal rate must be greater than 0%";
+  } else if (inputs.withdrawalRate > 20) {
+    errors.withdrawalRate = "Rate above 20% is unsustainable";
+  }
+
+  if (
+    Number.isFinite(targetCoastAge) &&
+    Number.isFinite(inputs.currentAge) &&
+    targetCoastAge <= inputs.currentAge
+  ) {
+    errors.targetCoastAge = "Target must be after current age";
+  }
+
+  return errors;
+}
+
 
 function Index() {
   const [inputs, setInputs] = useState<CoastInputs>({
