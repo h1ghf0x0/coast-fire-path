@@ -245,27 +245,37 @@ function Index() {
                 <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                   <NumberField
                     label="Current Age"
+                    min={0}
+                    max={120}
                     value={inputs.currentAge}
                     onChange={(v) => set("currentAge", v)}
+                    error={errors.currentAge}
                   />
                   <NumberField
                     label="Target Age"
+                    min={0}
+                    max={120}
                     value={inputs.retirementAge}
                     onChange={(v) => set("retirementAge", v)}
+                    error={errors.retirementAge}
                   />
                   <NumberField
                     label="Current Assets"
                     prefix="$"
                     step={1000}
+                    min={0}
                     value={inputs.currentSavings}
                     onChange={(v) => set("currentSavings", v)}
+                    error={errors.currentSavings}
                   />
                   <NumberField
                     label="Annual Expenses"
                     prefix="$"
                     step={500}
+                    min={0}
                     value={inputs.annualExpenses}
                     onChange={(v) => set("annualExpenses", v)}
+                    error={errors.annualExpenses}
                   />
                 </div>
               </div>
@@ -281,6 +291,7 @@ function Index() {
                     step={0.1}
                     value={inputs.expectedReturn}
                     onChange={(v) => set("expectedReturn", v)}
+                    error={errors.expectedReturn}
                   />
                   <NumberField
                     label="Safe Withdrawal"
@@ -288,6 +299,7 @@ function Index() {
                     step={0.1}
                     value={inputs.withdrawalRate}
                     onChange={(v) => set("withdrawalRate", v)}
+                    error={errors.withdrawalRate}
                   />
                 </div>
               </div>
