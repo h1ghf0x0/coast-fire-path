@@ -319,32 +319,49 @@ function Index() {
                 <h3 className="text-xs uppercase tracking-widest text-zinc-400 mb-3">
                   Monthly savings to coast by age
                 </h3>
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-4 mb-2">
                   <input
                     type="number"
+                    min={0}
+                    max={120}
+                    aria-invalid={!!errors.targetCoastAge}
                     value={targetCoastAge}
                     onChange={(e) =>
                       setTargetCoastAge(e.target.valueAsNumber || 0)
                     }
-                    className="w-20 bg-transparent border-b border-zinc-700 focus:border-horizon outline-none text-2xl py-1 tabular-nums"
+                    className={`w-20 bg-transparent border-b outline-none text-2xl py-1 tabular-nums ${
+                      errors.targetCoastAge
+                        ? "border-horizon"
+                        : "border-zinc-700 focus:border-horizon"
+                    }`}
                   />
                   <span className="text-zinc-500 text-xs uppercase tracking-widest">
                     target age
                   </span>
                 </div>
-                <div className="font-display text-5xl mb-3">
-                  {monthlyNeeded === null
+                {errors.targetCoastAge && (
+                  <p
+                    role="alert"
+                    className="text-[10px] uppercase tracking-widest text-horizon mb-3"
+                  >
+                    {errors.targetCoastAge}
+                  </p>
+                )}
+                <div className="font-display text-5xl mb-3 mt-2">
+                  {!inputsValid || monthlyNeeded === null
                     ? "—"
                     : monthlyNeeded === 0
                       ? "$0"
                       : formatCurrency(monthlyNeeded)}
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed">
-                  {monthlyNeeded === null
-                    ? "Choose a target age beyond your current age."
-                    : monthlyNeeded === 0
-                      ? "You are already on track — no additional contributions required."
-                      : `Per month, every month, until age ${targetCoastAge}.`}
+                  {!inputsValid
+                    ? "Resolve the warnings above to see your plan."
+                    : monthlyNeeded === null
+                      ? "Choose a target age beyond your current age."
+                      : monthlyNeeded === 0
+                        ? "You are already on track — no additional contributions required."
+                        : `Per month, every month, until age ${targetCoastAge}.`}
                 </p>
               </div>
             </div>
