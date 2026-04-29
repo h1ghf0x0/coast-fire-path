@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Area,
@@ -256,6 +256,27 @@ function Index() {
   const coastReached = inputsValid && inputs.currentSavings >= results.coastNumber;
   const set = <K extends keyof CoastInputs>(k: K, v: CoastInputs[K]) =>
     setInputs((p) => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !inputsValid) return;
+    try {
+      localStorage.setItem(
+        "coastFireData",
+        JSON.stringify({
+          age: inputs.currentAge,
+          retirementAge: inputs.retirementAge,
+          netWorth: inputs.currentSavings,
+          expenses: inputs.annualExpenses,
+          expectedReturn: inputs.expectedReturn,
+          withdrawalRate: inputs.withdrawalRate,
+          coastNumber: results.coastNumber,
+          coastAge: results.coastAge,
+        }),
+      );
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [inputs, inputsValid, results.coastNumber, results.coastAge]);
 
   return (
     <div className="min-h-dvh bg-paper text-ink selection:bg-horizon selection:text-white">
