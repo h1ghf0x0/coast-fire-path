@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MonetizationSection } from "@/components/MonetizationSection";
 
 export const Route = createFileRoute("/")({
   component: Index,
