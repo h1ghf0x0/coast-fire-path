@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MonetizationSection } from "@/components/MonetizationSection";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -677,6 +678,8 @@ function Index() {
             )}
           </div>
         </section>
+
+        <MonetizationSection />
 
         {/* Methodology */}
         <section className="px-6 md:px-8 py-16 md:py-24 bg-ink text-white">
