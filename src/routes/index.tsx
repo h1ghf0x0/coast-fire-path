@@ -742,6 +742,26 @@ function Index() {
                   </p>
                 </div>
               </div>
+
+              {/* Share scenario */}
+              <div className="mt-10 pt-8 border-t border-blueprint flex flex-col sm:flex-row sm:items-center gap-4 relative z-10">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="group inline-flex items-center gap-3 px-5 py-3 bg-ink text-white text-[10px] uppercase tracking-[0.25em] hover:bg-horizon transition-colors rounded-sm self-start"
+                >
+                  <span className="size-1.5 bg-horizon group-hover:bg-white transition-colors" />
+                  Share your scenario
+                </button>
+                <span
+                  aria-live="polite"
+                  className={`text-[10px] uppercase tracking-widest text-horizon transition-opacity duration-300 ${
+                    copied ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  Link copied — anyone can see your numbers.
+                </span>
+              </div>
             </div>
 
             {/* Decorative scale */}
