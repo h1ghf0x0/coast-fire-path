@@ -223,15 +223,46 @@ const YIELD_PRESETS: YieldPreset[] = [
 
 
 
-function Index() {
-  const [inputs, setInputs] = useState<CoastInputs>({
-    currentAge: 31,
-    retirementAge: 62,
-    currentSavings: 184200,
-    annualExpenses: 64000,
-    expectedReturn: 7.2,
-    withdrawalRate: 4,
+const DEFAULT_INPUTS: CoastInputs = {
+  currentAge: 31,
+  retirementAge: 62,
+  currentSavings: 184200,
+  annualExpenses: 64000,
+  expectedReturn: 7.2,
+  withdrawalRate: 4,
+};
+
+const PARAM_KEYS: Record<keyof CoastInputs, string> = {
+  currentAge: "age",
+  retirementAge: "ret",
+  currentSavings: "nw",
+  annualExpenses: "exp",
+  withdrawalRate: "swr",
+  expectedReturn: "retRate",
+};
+
+function parseInputsFromUrl(): CoastInputs {
+  if (typeof window === "undefined") return DEFAULT_INPUTS;
+  const sp = new URLSearchParams(window.location.search);
+  const next = { ...DEFAULT_INPUTS };
+  (Object.keys(PARAM_KEYS) as (keyof CoastInputs)[]).forEach((k) => {
+    const raw = sp.get(PARAM_KEYS[k]);
+    if (raw !== null && raw !== "") {
+      const n = Number(raw);
+      if (Number.isFinite(n)) next[k] = n;
+    }
   });
+  return next;
+}
+
+function Index() {
+  const [inputs, setInputs] = useState<CoastInputs>(DEFAULT_INPUTS);
+  const [copied, setCopied] = useState(false);
+
+  // Hydrate from URL on mount (client-only to avoid SSR mismatch)
+  useEffect(() => {
+    setInputs(parseInputsFromUrl());
+  }, []);
 
   const [targetCoastAge, setTargetCoastAge] = useState<number>(36);
 
@@ -277,6 +308,30 @@ function Index() {
       /* ignore quota errors */
     }
   }, [inputs, inputsValid, results.coastNumber, results.coastAge]);
+
+  // Sync inputs to URL query params (no reload)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    (Object.keys(PARAM_KEYS) as (keyof CoastInputs)[]).forEach((k) => {
+      const v = inputs[k];
+      if (Number.isFinite(v)) sp.set(PARAM_KEYS[k], String(v));
+    });
+    const qs = sp.toString();
+    const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [inputs]);
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      /* ignore */
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2200);
+  };
 
   return (
     <div className="min-h-dvh bg-paper text-ink selection:bg-horizon selection:text-white">
@@ -686,6 +741,26 @@ function Index() {
                       : "Distance to today's coast point."}
                   </p>
                 </div>
+              </div>
+
+              {/* Share scenario */}
+              <div className="mt-10 pt-8 border-t border-blueprint flex flex-col sm:flex-row sm:items-center gap-4 relative z-10">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="group inline-flex items-center gap-3 px-5 py-3 bg-ink text-white text-[10px] uppercase tracking-[0.25em] hover:bg-horizon transition-colors rounded-sm self-start"
+                >
+                  <span className="size-1.5 bg-horizon group-hover:bg-white transition-colors" />
+                  Share your scenario
+                </button>
+                <span
+                  aria-live="polite"
+                  className={`text-[10px] uppercase tracking-widest text-horizon transition-opacity duration-300 ${
+                    copied ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  Link copied — anyone can see your numbers.
+                </span>
               </div>
             </div>
 
