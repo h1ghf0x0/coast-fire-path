@@ -223,15 +223,46 @@ const YIELD_PRESETS: YieldPreset[] = [
 
 
 
-function Index() {
-  const [inputs, setInputs] = useState<CoastInputs>({
-    currentAge: 31,
-    retirementAge: 62,
-    currentSavings: 184200,
-    annualExpenses: 64000,
-    expectedReturn: 7.2,
-    withdrawalRate: 4,
+const DEFAULT_INPUTS: CoastInputs = {
+  currentAge: 31,
+  retirementAge: 62,
+  currentSavings: 184200,
+  annualExpenses: 64000,
+  expectedReturn: 7.2,
+  withdrawalRate: 4,
+};
+
+const PARAM_KEYS: Record<keyof CoastInputs, string> = {
+  currentAge: "age",
+  retirementAge: "ret",
+  currentSavings: "nw",
+  annualExpenses: "exp",
+  withdrawalRate: "swr",
+  expectedReturn: "retRate",
+};
+
+function parseInputsFromUrl(): CoastInputs {
+  if (typeof window === "undefined") return DEFAULT_INPUTS;
+  const sp = new URLSearchParams(window.location.search);
+  const next = { ...DEFAULT_INPUTS };
+  (Object.keys(PARAM_KEYS) as (keyof CoastInputs)[]).forEach((k) => {
+    const raw = sp.get(PARAM_KEYS[k]);
+    if (raw !== null && raw !== "") {
+      const n = Number(raw);
+      if (Number.isFinite(n)) next[k] = n;
+    }
   });
+  return next;
+}
+
+function Index() {
+  const [inputs, setInputs] = useState<CoastInputs>(DEFAULT_INPUTS);
+  const [copied, setCopied] = useState(false);
+
+  // Hydrate from URL on mount (client-only to avoid SSR mismatch)
+  useEffect(() => {
+    setInputs(parseInputsFromUrl());
+  }, []);
 
   const [targetCoastAge, setTargetCoastAge] = useState<number>(36);
 
