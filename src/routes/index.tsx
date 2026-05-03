@@ -309,6 +309,30 @@ function Index() {
     }
   }, [inputs, inputsValid, results.coastNumber, results.coastAge]);
 
+  // Sync inputs to URL query params (no reload)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    (Object.keys(PARAM_KEYS) as (keyof CoastInputs)[]).forEach((k) => {
+      const v = inputs[k];
+      if (Number.isFinite(v)) sp.set(PARAM_KEYS[k], String(v));
+    });
+    const qs = sp.toString();
+    const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [inputs]);
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      /* ignore */
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2200);
+  };
+
   return (
     <div className="min-h-dvh bg-paper text-ink selection:bg-horizon selection:text-white">
       {/* Nav */}
